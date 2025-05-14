@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthFinder | Affordable Healthcare Locator</title>
+    <style>
+        :root {
+            --primary: #2D7DD2;
+            --secondary: #97CC04;
+            --accent: #EEB902;
+            --light: #F5F7FA;
+            --dark: #2C363F;
+            --error: #D64045;
+            --success: #3E885B;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            width: 900px;
+            height: 600px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .image-side {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .image-side h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            z-index: 2;
+        }
+        
+        .image-side p {
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            z-index: 2;
+        }
+        
+        .form-side {
+            flex: 1;
+            background-color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .form-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .form-header h2 {
+            color: var(--dark);
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .form-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--dark);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(45, 125, 210, 0.2);
+        }
+        
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1c68b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent);
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d9a801;
+            transform: translateY(-2px);
+        }
+        
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .form-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background-color: #f1f1f1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        
+        .tab:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .forms-container {
+            position: relative;
+            height: 320px;
+            overflow: hidden;
+        }
+        
+        .form {
+            width: 100%;
+            position: absolute;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .login-form {
+            transform: translateX(0);
+        }
+        
+        .signup-form {
+            transform: translateX(100%);
+        }
+        
+        .login-form.inactive {
+            transform: translateX(-100%);
+        }
+        
+        .signup-form.active {
+            transform: translateX(0);
+        }
+        
+        .forgot-password {
+            text-align: right;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.3); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.3); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        
+        .medical-icon {
+            font-size: 80px;
+            color: white;
+            margin-bottom: 30px;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .heart-icon {
+            animation: heartbeat 2s infinite;
+        }
+        
+        .form-side h2,
+        .form-side p,
+        .form-group,
+        .btn-primary,
+        .btn-secondary {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .form-side h2 { animation-delay: 0.2s; }
+        .form-side p { animation-delay: 0.4s; }
+        .form-group:nth-child(1) { animation-delay: 0.6s; }
+        .form-group:nth-child(2) { animation-delay: 0.8s; }
+        .form-group:nth-child(3) { animation-delay: 1s; }
+        .btn-primary { animation-delay: 1.2s; }
+        .btn-secondary { animation-delay: 1.4s; }
+        .form-footer { animation-delay: 1.6s; opacity: 0; animation: fadeIn 0.8s ease-out 1.6s forwards; }
+        
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .bg-circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            animation: pulse 7s infinite;
+        }
+        
+        .bg-circle-2 {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            right: -50px;
+            animation: pulse 5s infinite;
+        }
+        
+        /* Medical-themed animation elements */
+        .pulse-line {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .pulse-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            top: -3px;
+            left: 0;
+            animation: pulseDot 4s infinite linear;
+        }
+        
+        @keyframes pulseDot {
+            0% { left: 0; }
+            50% { left: 100%; }
+            50.1% { left: 0; }
+            100% { left: 100%; }
+        }
+        
+        /* Cross icon animation */
+        .cross-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .cross-horizontal, .cross-vertical {
+            position: absolute;
+            background-color: white;
+            border-radius: 4px;
+        }
+        
+        .cross-horizontal {
+            width: 100%;
+            height: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: crossHorizontal 3s infinite;
+        }
+        
+        .cross-vertical {
+            height: 100%;
+            width: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: crossVertical 3s infinite;
+        }
+        
+        @keyframes crossHorizontal {
+            0% { width: 0; left: 50%; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0; left: 50%; }
+        }
+        
+        @keyframes crossVertical {
+            0% { height: 0; top: 50%; }
+            50% { height: 100%; top: 0; }
+            100% { height: 0; top: 50%; }
+        }
+
+        /* Input focus animations */
+        .form-group input:focus + .focus-border {
+            transform: scaleX(1);
+            opacity: 1;
+        }
+        
+        .focus-border {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+            transform: scaleX(0);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        /* Added styles for image-side signup button */
+        .signup-cta {
+            margin-top: 30px;
+            width: 80%;
+            text-align: center;
+            z-index: 2;
+            animation: fadeIn 0.8s ease-out 1.2s forwards;
+            opacity: 0;
+        }
+        
+        .signup-button {
+            background-color: white;
+            color: var(--primary);
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .signup-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-side">
+            <!-- Background animation elements -->
+            <div class="bg-circle bg-circle-1"></div>
+            <div class="bg-circle bg-circle-2"></div>
+            
+            <!-- Animated medical cross -->
+            <div class="cross-container">
+                <div class="cross-horizontal"></div>
+                <div class="cross-vertical"></div>
+            </div>
+            
+            <h1>HealthFinder</h1>
+            <p>Find affordable healthcare services near you. Connect with low-cost clinics, discount programs, and community resources.</p>
+            
+            <!-- Added Signup Button -->
+            <div class="signup-cta">
+                <button class="signup-button" id="hero-signup-btn">Sign Up Now</button>
+            </div>
+            
+            <!-- Animated pulse line -->
+            <div class="pulse-line">
+                <div class="pulse-dot"></div>
+            </div>
+        </div>
+        
+        <div class="form-side">
+            <div class="form-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to find affordable healthcare options near you</p>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" id="login-tab">Login</div>
+                <div class="tab" id="signup-tab">Sign Up</div>
+            </div>
+            
+            <div class="forms-container">
+                <div class="form login-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="Enter your email">
+                        <div class="focus-border"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password">
+                        <div class="focus-border"></div>
+                        <div class="forgot-password">
+                            <a href="#">Forgot password?</a>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary">Sign In</button>
+                    <button class="btn btn-secondary" id="login-signup-btn">Create New Account</button>
+                </div>
+                
+                <div class="form signup-form">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" placeholder="Enter your full name">
+                        <div class="focus-border"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" placeholder="Enter your email">
+                        <div class="focus-border"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" placeholder="Create a password">
+                        <div class="focus-border"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary">Create Account</button>
+                </div>
+            </div>
+            
+            <div class="form-footer">
+                <p>By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginTab = document.getElementById('login-tab');
+            const signupTab = document.getElementById('signup-tab');
+            const loginForm = document.querySelector('.login-form');
+            const signupForm = document.querySelector('.signup-form');
+            const formHeader = document.querySelector('.form-header');
+            const heroSignupBtn = document.getElementById('hero-signup-btn');
+            const loginSignupBtn = document.getElementById('login-signup-btn');
+            
+            function switchToSignup() {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                loginForm.classList.add('inactive');
+                signupForm.classList.add('active');
+                formHeader.querySelector('h2').textContent = 'Create Account';
+                formHeader.querySelector('p').textContent = 'Join us to find affordable healthcare options near you';
+            }
+            
+            function switchToLogin() {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.classList.remove('inactive');
+                signupForm.classList.remove('active');
+                formHeader.querySelector('h2').textContent = 'Welcome Back';
+                formHeader.querySelector('p').textContent = 'Sign in to find affordable healthcare options near you';
+            }
+            
+            loginTab.addEventListener('click', switchToLogin);
+            signupTab.addEventListener('click', switchToSignup);
+            
+            // Add event listeners for the signup buttons
+            heroSignupBtn.addEventListener('click', switchToSignup);
+            loginSignupBtn.addEventListener('click', switchToSignup);
+        });
+    </script>
+    <!-- Add this script to your login.html -->
+<script>
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Store token in localStorage
+          localStorage.setItem('token', data.token);
+          // Redirect to home page
+          window.location.href = '/';
+        } else {
+          // Show error message
+          alert(data.error || 'Login failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('An error occurred during login. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

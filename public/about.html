@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CareConnect - About Us</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        /* Navigation Styles */
+        .navbar {
+            background-color: #2c7be5;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+        }
+        .navbar-nav li {
+            margin-left: 1rem;
+        }
+        .navbar-nav a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .navbar-nav a:hover {
+            color: #a5d8ff;
+        }
+
+        /* About Page Specific Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .about-header {
+            text-align: center;
+            padding: 4rem 2rem;
+            animation: fadeInUp 1s ease-out;
+        }
+        .about-header h1 {
+            color: #2c7be5;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .about-cards {
+            display: flex;
+            justify-content: space-around;
+            padding: 2rem;
+        }
+        .about-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 30%;
+            text-align: center;
+            transition: transform 0.3s ease;
+            animation: cardSlideIn 1s ease-out;
+        }
+        .about-card:nth-child(1) { animation-delay: 0.2s; }
+        .about-card:nth-child(2) { animation-delay: 0.4s; }
+        .about-card:nth-child(3) { animation-delay: 0.6s; }
+
+        .about-card:hover {
+            transform: translateY(-10px);
+        }
+        .about-card-icon {
+            font-size: 3rem;
+            color: #2c7be5;
+            margin-bottom: 1rem;
+        }
+        .about-card h3 {
+            color: #2c7be5;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #2c7be5;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">CareConnect</div>
+        <ul class="navbar-nav">
+            <li><a href="#">Home</a></li>
+            <li><a href="#" class="active">About</a></li>
+            <li><a href="#">Resources</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div class="about-header">
+        <h1>About CareConnect</h1>
+        <p>Empowering healthcare access for everyone, everywhere.</p>
+    </div>
+
+    <div class="about-cards">
+        <div class="about-card">
+            <div class="about-card-icon">🎯</div>
+            <h3>Our Mission</h3>
+            <p>Providing affordable, quality healthcare solutions to communities.</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-icon">👁️</div>
+            <h3>Our Vision</h3>
+            <p>Creating a world where healthcare is a fundamental right, not a privilege.</p>
+        </div>
+        <div class="about-card">
+            <div class="about-card-icon">❤️</div>
+            <h3>Our Values</h3>
+            <p>Compassion, integrity, and patient-centered care guide our every action.</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 CareConnect. All Rights Reserved.
+    </footer>
+</body>
+</html>

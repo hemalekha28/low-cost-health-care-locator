@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareConnect - Find Affordable Healthcare Near You</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<style>
+    .form-range::-webkit-slider-thumb {
+        background: #0d6efd;
+    }
+    .form-range::-moz-range-thumb {
+        background: #0d6efd;
+    }
+    .form-range::-ms-thumb {
+        background: #0d6efd;
+    }
+</style>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Finding healthcare providers near you...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-heartbeat text-primary me-2 pulse-icon"></i>
+                <span class="fw-bold">Care<span class="text-primary">Connect</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/resources">Resources</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-primary text-primary px-3 ms-lg-2" href="#" data-bs-toggle="modal" data-bs-target="#cost-estimation-modal">
+                            <i class="fas fa-calculator me-1"></i> Cost Estimator
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white px-3 ms-lg-3" href="/login">
+                            <i class="fas fa-user me-1"></i> Login
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                    <h1 class="display-4 fw-bold">Find Affordable Healthcare Services Near You</h1>
+                    <p class="lead mt-3 mb-4">Access low-cost clinics, community health centers, and medical services that fit your budget and needs.</p>
+                    <a href="#search-section" class="btn btn-primary btn-lg px-4 me-2 pulse-btn">
+                        <i class="fas fa-search me-2"></i> Find Care Now
+                    </a>
+                    <a href="/resources" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-info-circle me-2"></i> Learn More
+                    </a>
+                </div>
+                <div class="col-lg-5 d-none d-lg-block animate__animated animate__fadeInRight">
+                    <img src="/images/healthcare-illustration.svg" alt="Healthcare Illustration" class="img-fluid floating-img">
+                </div>
+            </div>
+        </div>
+        <div class="wave-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100">
+                <path fill="#ffffff" fill-opacity="1" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,80C672,64,768,64,864,69.3C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Search Section -->
+    <section id="search-section" class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card shadow-lg border-0 rounded-lg animate__animated animate__fadeInUp">
+                        <div class="card-header bg-white text-center p-4">
+                            <h2 class="mb-0">Search Healthcare Providers</h2>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="provider-search-form">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="location" class="form-label">Your Location</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                            <input type="text" class="form-control" id="location" placeholder="City, State or ZIP Code" required>
+                                            <button type="button" class="btn btn-outline-secondary" id="use-my-location">
+                                                <i class="fas fa-crosshairs"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="care-type" class="form-label">Service Type</label>
+                                        <select class="form-select" id="care-type">
+                                            <option value="">Any Service</option>
+                                            <option value="hospital">Hospital</option>
+                                            <option value="clinic">Clinic</option>
+                                            <option value="doctors">Doctor's Office</option>
+                                            <option value="dentist">Dental Care</option>
+                                            <option value="pharmacy">Pharmacy</option>
+                                            <option value="mental">Mental Health</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="radius" class="form-label">Search Radius: <span id="radius-value">10 miles</span></label>
+                                            <input type="range" class="form-range" id="radius" min="1" max="50" value="10">
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>// Add event listener to update radius value display
+                                    document.getElementById('radius').addEventListener('input', function() {
+                                        document.getElementById('radius-value').textContent = this.value + ' miles';
+                                    });
+                                </script>
+                                    <div class="col-12">
+                                        <label class="form-label">Payment Options</label>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="sliding-scale" value="Sliding Scale">
+                                                <label class="form-check-label" for="sliding-scale">Sliding Scale</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="free-care" value="Free">
+                                                <label class="form-check-label" for="free-care">Free Care</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="insurance" value="Insurance">
+                                                <label class="form-check-label" for="insurance">Accepts Insurance</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="medicaid" value="Medicaid">
+                                                <label class="form-check-label" for="medicaid">Accepts Medicaid</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <label class="form-label">Cost Range</label>
+                                        <div class="row">
+                                          <div class="col-md-6">
+                                            <div class="mb-3">
+                                              <label for="cost-filter" class="form-label">Price Level: <span id="cost-filter-value">Any Price</span></label>
+                                              <input type="range" class="form-range" id="cost-filter" min="0" max="4" value="4">
+                                            </div>
+                                            <div class="small text-muted mb-3">
+                                              <span class="d-flex justify-content-between">
+                                                <span>₹ (Very Low Cost)</span>
+                                                <span>₹₹₹₹ (Standard Rates)</span>
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                              <input class="form-check-input" type="checkbox" id="financial-assistance" value="Financial Assistance">
+                                              <label class="form-check-label" for="financial-assistance">Offers Financial Assistance</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                              <input class="form-check-input" type="checkbox" id="charity-care" value="Charity Care">
+                                              <label class="form-check-label" for="charity-care">Charity Care Program</label>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <script>
+                                        // Add event listener to update cost filter value display
+document.getElementById('cost-filter').addEventListener('input', function() {
+    const values = ['₹ (Very Low)', '₹₹ (Low)', '₹₹₹ (Moderate)', '₹₹₹₹ (Standard)', 'Any Price'];
+    document.getElementById('cost-filter-value').textContent = this.value < 4 ? values[this.value] : values[4];
+});
+                                      </script>
+                                    <div class="col-12 text-center mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                                            <i class="fas fa-search me-2"></i> Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div id="search-results" class="mt-5">
+                              <!-- Results will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results-section" class="py-5 bg-light d-none">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0 order-lg-2">
+                    <div class="card shadow-sm border-0 sticky-top" style="top: 100px;">
+                        <div class="card-body p-0">
+                            <div id="results-map" style="height: 400px;"></div>
+                            <div class="p-3">
+                                <h5 class="mb-3">Filter Results</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Distance</label>
+                                    <select class="form-select" id="filter-distance">
+                                        <option value="all">All Distances</option>
+                                        <option value="5">Under 5 miles</option>
+                                        <option value="10">Under 10 miles</option>
+                                        <option value="20">Under 20 miles</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Facility Type</label>
+                                    <div id="facility-type-filters">
+                                        <!-- Dynamically populated -->
+                                    </div>
+                                </div>
+                                <button id="apply-filters" class="btn btn-primary w-100">Apply Filters</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8 order-lg-1">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Healthcare Providers</h2>
+                        <span class="badge bg-primary fs-6" id="results-count">0 Results</span>
+                    </div>
+                    <div id="results-list" class="mb-4">
+                        <!-- Results will be dynamically inserted here -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-3">Loading results...</p>
+                        </div>
+                    </div>
+                    <div id="no-results" class="text-center py-5 d-none">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>No healthcare providers found</h4>
+                        <p class="text-muted">Try adjusting your search criteria or increasing the search radius.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">How CareConnect Works</h2>
+                <p class="lead text-muted">Finding affordable healthcare has never been easier</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card animate__animated animate__fadeInUp" data-delay="100">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-circle bg-primary text-white mb-3">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h4>Search</h4>
+                            <p class="text-muted">Enter your location and preferences to find healthcare providers near you.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card animate__animated animate__fadeInUp" data-delay="300">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-circle bg-primary text-white mb-3">
+                                <i class="fas fa-filter"></i>
+                            </div>
+                            <h4>Compare</h4>
+                            <p class="text-muted">Filter results by services, payment options, and distance to find your best match.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card animate__animated animate__fadeInUp" data-delay="500">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-circle bg-primary text-white mb-3">
+                                <i class="fas fa-clinic-medical"></i>
+                            </div>
+                            <h4>Connect</h4>
+                            <p class="text-muted">Get detailed information about facilities and connect directly with providers.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">What People Are Saying</h2>
+                <p class="lead text-muted">Hear from people who found care through our platform</p>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="testimonial-carousel">
+                        <div class="card border-0 shadow-sm p-4 testimonial-card animate__animated animate__fadeIn">
+                            <div class="d-flex mb-4">
+                                <div class="testimonial-avatar bg-primary text-white">MJ</div>
+                                <div class="ms-3">
+                                    <h5 class="mb-0">Maria Johnson</h5>
+                                    <p class="text-muted mb-0">Seattle, WA</p>
+                                </div>
+                            </div>
+                            <p class="mb-0">"CareConnect helped me find a clinic that offers sliding scale payments. As someone without insurance, this was life-changing for managing my chronic condition."</p>
+                            <div class="text-warning mt-3">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm p-4 testimonial-card animate__animated animate__fadeIn" style="animation-delay: 0.3s;">
+                            <div class="d-flex mb-4">
+                                <div class="testimonial-avatar bg-primary text-white">RP</div>
+                                <div class="ms-3">
+                                    <h5 class="mb-0">Robert Peterson</h5>
+                                    <p class="text-muted mb-0">Chicago, IL</p>
+                                </div>
+                            </div>
+                            <p class="mb-0">"I found a community health center just 3 miles from my home that I never knew existed. They offer affordable dental care which was exactly what my family needed."</p>
+                            <div class="text-warning mt-3">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm p-4 testimonial-card animate__animated animate__fadeIn" style="animation-delay: 0.6s;">
+                            <div class="d-flex mb-4">
+                                <div class="testimonial-avatar bg-primary text-white">LT</div>
+                                <div class="ms-3">
+                                    <h5 class="mb-0">Lisa Thompson</h5>
+                                    <p class="text-muted mb-0">Atlanta, GA</p>
+                                </div>
+                            </div>
+                            <p class="mb-0">"The detailed information about each facility helped me make an informed decision about where to go for my mental health needs. The map feature was incredibly helpful."</p>
+                            <div class="text-warning mt-3">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-5 newsletter-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-lg rounded-lg animate__animated animate__fadeInUp">
+                        <div class="card-body p-5 text-center">
+                            <i class="fas fa-envelope-open-text fa-3x text-primary mb-3"></i>
+                            <h3 class="fw-bold">Stay Updated</h3>
+                            <p class="text-muted mb-4">Subscribe to our newsletter for the latest updates on healthcare resources and community programs.</p>
+                            <form id="newsletter-form" class="d-flex justify-content-center">
+                                <div class="input-group input-group-lg w-100" style="max-width: 500px;">
+                                    <input type="email" class="form-control" placeholder="Your email address" required>
+                                    <button class="btn btn-primary" type="submit">Subscribe</button>
+                                </div>
+                            </form>
+                            <div class="mt-3 text-muted small">
+                                <i class="fas fa-lock me-1"></i> Your information is secure. We never share your email.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="mb-4">
+                        <a class="d-flex align-items-center text-white text-decoration-none" href="/">
+                            <i class="fas fa-heartbeat text-primary me-2"></i>
+                            <span class="fw-bold fs-4">Care<span class="text-primary">Connect</span></span>
+                        </a>
+                    </div>
+                    <p class="text-muted">Connecting people with affordable healthcare options in their community since 2023.</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="mb-3">Quick Links</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2"><a href="/" class="nav-link p-0 text-muted">Home</a></li>
+                        <li class="nav-item mb-2"><a href="/about" class="nav-link p-0 text-muted">About</a></li>
+                        <li class="nav-item mb-2"><a href="/resources" class="nav-link p-0 text-muted">Resources</a></li>
+                        <li class="nav-item mb-2"><a href="/contact" class="nav-link p-0 text-muted">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5 class="mb-3">Resources</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Healthcare Benefits</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Medicaid Information</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Free Health Clinics</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted">Community Programs</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5 class="mb-3">Contact</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2"><a href="mailto:info@careconnect.org" class="nav-link p-0 text-muted"><i class="fas fa-envelope me-2"></i> info@careconnect.org</a></li>
+                        <li class="nav-item mb-2"><a href="tel:+1-800-123-4567" class="nav-link p-0 text-muted"><i class="fas fa-phone me-2"></i> (800) 123-4567</a></li>
+                        <li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-muted"><i class="fas fa-map-marker-alt me-2"></i> 123 Main St, Suite 100<br>Portland, OR 97201</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between">
+                <p>&copy; 2023 CareConnect. All rights reserved.</p>
+                <ul class="list-unstyled d-flex">
+                    <li class="ms-3"><a class="text-muted" href="#">Privacy Policy</a></li>
+                    <li class="ms-3"><a class="text-muted" href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Facility Details Modal -->
+    <div class="modal fade" id="facility-details-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="facility-name">Facility Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="facility-detail-map" style="height: 200px;"></div>
+                            <div class="mt-3">
+                                <h6 class="fw-bold"><i class="fas fa-map-marker-alt me-2 text-primary"></i> Address</h6>
+                                <p id="facility-address">Loading...</p>
+                                
+                                <h6 class="fw-bold mt-3"><i class="fas fa-phone me-2 text-primary"></i> Contact</h6>
+                                <p id="facility-contact">Loading...</p>
+                                
+                                <h6 class="fw-bold mt-3"><i class="fas fa-clock me-2 text-primary"></i> Hours</h6>
+                                <p id="facility-hours">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold"><i class="fas fa-stethoscope me-2 text-primary"></i> Services</h6>
+                            <ul id="facility-services" class="list-unstyled">
+                                <li>Loading...</li>
+                            </ul>
+                            
+                            <h6 class="fw-bold mt-3"><i class="fas fa-money-bill-wave me-2 text-primary"></i> Payment Options</h6>
+                            <ul id="facility-payment" class="list-unstyled">
+                                <li>Loading...</li>
+                            </ul>
+                            
+                            <h6 class="fw-bold mt-3"><i class="fas fa-wheelchair me-2 text-primary"></i> Accessibility</h6>
+                            <p id="facility-accessibility">Loading...</p>
+                            
+                            <h6 class="fw-bold mt-3"><i class="fas fa-globe me-2 text-primary"></i> Website</h6>
+                            <p id="facility-website">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-outline-secondary" id="facility-directions" target="_blank">
+                        <i class="fas fa-directions me-2"></i> Get Directions
+                    </a>
+                    <a href="#" class="btn btn-primary" id="facility-phone">
+                        <i class="fas fa-phone me-2"></i> Call Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <!-- Custom JS -->
+    <script src="js/script.js"></script>
+
+    <!-- Cost Estimation Modal -->
+<div class="modal fade" id="cost-estimation-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">Estimate Healthcare Costs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <p>Compare costs for common procedures across healthcare providers in your area.</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="procedure-select" class="form-label">Procedure</label>
+                            <select id="procedure-select" class="form-select">
+                                <option value="">Select a procedure...</option>
+                                <option value="Physical Exam">Physical Exam</option>
+                                <option value="Blood Test">Blood Test</option>
+                                <option value="X-Ray">X-Ray</option>
+                                <option value="Ultrasound">Ultrasound</option>
+                                <option value="MRI">MRI</option>
+                                <option value="CT Scan">CT Scan</option>
+                                <option value="Vaccination">Vaccination</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="insurance-select" class="form-label">Insurance Status</label>
+                            <select id="insurance-select" class="form-select">
+                                <option value="none">No Insurance (Self-Pay)</option>
+                                <option value="private">Private Insurance</option>
+                                <option value="medicare">Medicare</option>
+                                <option value="medicaid">Medicaid</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cost-zip-code" class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="cost-zip-code" placeholder="Enter ZIP code">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button id="estimate-cost-btn" class="btn btn-primary w-100">
+                                <i class="fas fa-calculator me-2" onclick="cost-estimation.js"></i> Estimate Costs
+                            </button>
+                        </div>
+                    </div>
+                    <div id="cost-estimate-results" class="mt-4">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+  document.getElementById('provider-search-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+  
+    // Show loading indicator
+    document.getElementById('loading-overlay').classList.add('active');
+    
+    const location = document.getElementById('location').value;
+    const careType = document.getElementById('care-type').value;
+    const radius = document.getElementById('radius').value;
+    const paymentOptions = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                                .map(cb => cb.value);
+  
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '<p class="text-muted">Searching...</p>';
+  
+    try {
+      // Change this URL to match your backend endpoint
+      const response = await fetch('/search-providers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location,
+          careType,
+          radius,
+          paymentOptions
+        })
+      });
+  
+      const data = await response.json();
+      
+      // Hide loading indicator
+      document.getElementById('loading-overlay').classList.remove('active');
+  
+      if (data.providers.length === 0) {
+        resultsContainer.innerHTML = '<div class="alert alert-warning text-center">No providers found matching your criteria.</div>';
+        return;
+      }
+  
+      const cardsHTML = data.providers.map(provider => `
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h5 class="card-title">${provider.name || provider.tags?.name || 'Unknown Provider'}</h5>
+            <p class="card-text">
+              <strong>Type:</strong> ${provider.facilityType || provider.tags?.amenity || 'N/A'}<br>
+              <strong>Address:</strong> ${provider.address || (provider.tags?.['addr:street'] ? `${provider.tags['addr:housenumber'] || ''} ${provider.tags['addr:street'] || ''}` : 'N/A')}<br>
+              <strong>Distance:</strong> ${provider.distance ? `${(provider.distance).toFixed(1)} miles` : 'N/A'}<br>
+              <strong>Payment Options:</strong> ${getPaymentOptions(provider)}
+            </p>
+            <a href="#" class="btn btn-primary view-details" data-id="${provider.id}" data-type="${provider.facilityType || 'healthcare'}">
+              <i class="fas fa-info-circle me-2"></i> View Details
+            </a>
+          </div>
+        </div>
+      `).join('');
+  
+      resultsContainer.innerHTML = `
+        <h4 class="mb-4">Found ${data.providers.length} Provider(s) near ${data.location}:</h4>
+        ${cardsHTML}
+      `;
+      
+      // Add event listeners to the view details buttons
+      document.querySelectorAll('.view-details').forEach(button => {
+        button.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const id = button.getAttribute('data-id');
+          const type = button.getAttribute('data-type');
+          await showFacilityDetails(id, type);
+        });
+      });
+  
+    } catch (error) {
+      console.error('Search error:', error);
+      // Hide loading indicator
+      document.getElementById('loading-overlay').classList.remove('active');
+      resultsContainer.innerHTML = '<div class="alert alert-danger text-center">An error occurred while fetching results. Please try again.</div>';
+    }
+  });
+  
+  // Helper function to format payment options
+  function getPaymentOptions(provider) {
+    const options = [];
+    
+    if (provider.tags?.['payment:sliding_scale'] === 'yes') {
+      options.push('Sliding Scale');
+    }
+    
+    if (provider.tags?.fee === 'no') {
+      options.push('Free Care');
+    }
+    
+    if (provider.tags?.['health_insurance'] === 'yes') {
+      options.push('Accepts Insurance');
+    }
+    
+    if (provider.tags?.['healthcare:insurance:medicaid'] === 'yes') {
+      options.push('Accepts Medicaid');
+    }
+    
+    return options.length > 0 ? options.join(', ') : 'Not specified';
+  }
+  
+  // Function to show facility details
+  async function showFacilityDetails(id, type) {
+    try {
+      const response = await fetch(`/api/facilities/${type}/${id}`);
+      const details = await response.json();
+      
+      // Populate modal with facility details
+      document.getElementById('facility-name').textContent = details.name || 'Facility Details';
+      document.getElementById('facility-address').textContent = details.address || 'Not available';
+      document.getElementById('facility-contact').textContent = details.phone || 'Not available';
+      document.getElementById('facility-hours').innerHTML = formatHours(details.hours);
+      document.getElementById('facility-services').innerHTML = formatServices(details.services);
+      document.getElementById('facility-payment').innerHTML = formatPayment(details.paymentOptions);
+      document.getElementById('facility-accessibility').textContent = details.accessibility || 'Information not available';
+      document.getElementById('facility-website').innerHTML = details.website ? 
+        `<a href="${details.website}" target="_blank">${details.website}</a>` : 
+        'Not available';
+      
+      // Set up directions link
+      const directionsLink = document.getElementById('facility-directions');
+      if (details.lat && details.lon) {
+        directionsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${details.lat},${details.lon}`;
+        directionsLink.classList.remove('disabled');
+      } else {
+        directionsLink.href = '#';
+        directionsLink.classList.add('disabled');
+      }
+      
+      // Set up phone link
+      const phoneLink = document.getElementById('facility-phone');
+      if (details.phone) {
+        phoneLink.href = `tel:${details.phone.replace(/[^0-9]/g, '')}`;
+        phoneLink.classList.remove('disabled');
+      } else {
+        phoneLink.href = '#';
+        phoneLink.classList.add('disabled');
+      }
+      
+      // Show the modal
+      const modal = new bootstrap.Modal(document.getElementById('facility-details-modal'));
+      modal.show();
+      
+    } catch (error) {
+      console.error('Error fetching facility details:', error);
+      alert('Unable to load facility details. Please try again.');
+    }
+  }
+  
+  // Helper functions for formatting facility details
+  function formatHours(hours) {
+    if (!hours || Object.keys(hours).length === 0) {
+      return 'Hours not available';
+    }
+    
+    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return daysOfWeek.map(day => {
+      const dayHours = hours[day.toLowerCase()] || 'Closed';
+      return `<strong>${day}:</strong> ${dayHours}`;
+    }).join('<br>');
+  }
+  
+  function formatServices(services) {
+    if (!services || services.length === 0) {
+      return '<li>Information not available</li>';
+    }
+    
+    return services.map(service => `<li><i class="fas fa-check-circle text-success me-2"></i>${service}</li>`).join('');
+  }
+  
+  function formatPayment(options) {
+    if (!options || options.length === 0) {
+      return '<li>Information not available</li>';
+    }
+    
+    return options.map(option => `<li><i class="fas fa-check-circle text-success me-2"></i>${option}</li>`).join('');
+  }
+</script>
+</html>
